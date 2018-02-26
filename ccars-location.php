@@ -26,12 +26,12 @@ function ccar_location_func() {
     $post = get_post();
     $post_content = $post->post_content;
 
-	if (stripos($post_content,'kelowna')) :
+	if (stripos($post_content,'kelowna')):
     	$dealer_location = "Kelowna";
 	elseif (stripos($post_content,'vancouver')):
     	$dealer_location = "Vancouver";
 	else:
-	    $dealer_location = "";
+	    $dealer_location = "Vancouver";
 	endif;
 
 

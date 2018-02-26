@@ -27,6 +27,8 @@ class CcarsCreateLocationKey {
 			endif;
 
 
+
+			// check if city exist
 			$check_city_exist = $wpdb->get_results("SELECT * FROM $wpdb->postmeta 
 					WHERE $wpdb->postmeta.post_id = $post_id and $wpdb->postmeta.meta_key = 'city'");
 
@@ -51,7 +53,7 @@ class CcarsCreateLocationKey {
 						) 
 					);
 		
-				else :
+				else:
 
 					$wpdb->insert( 
 						"$wpdb->postmeta", 
@@ -69,17 +71,81 @@ class CcarsCreateLocationKey {
 
 				endif;
 
-			
 
+				foreach ($check_city_exist as $city_post) :
+
+					$city_value = $city_post->meta_value;
+
+				endforeach;
+
+
+
+				//check if term relationships exist
+				$kelowna = 3113; //to be checked on wp_terms term_id
+				$vancouver = 3114; //to be checked on wp_terms term_id
+				$check_rel_exist = $wpdb->get_results("SELECT * FROM $wpdb->term_relationships 
+					WHERE $wpdb->term_relationships.object_id = $post_id and  
+					$wpdb->term_relationships.term_taxonomy_id = $vancouver
+					or $wpdb->term_relationships.object_id = $post_id and  
+					$wpdb->term_relationships.term_taxonomy_id = $kelowna");
+
+			
+					if ($wpdb->num_rows > 0) :
+
+						$wpdb->delete( 
+							"$wpdb->term_relationships", 
+							array( 
+								'object_id' => $post_id,
+							 	'term_taxonomy_id' => $kelowna
+							 	), 
+							array( 
+								'%d',
+								'%d'
+								) 
+						);
+
+						$wpdb->delete( 
+						"$wpdb->term_relationships", 
+						array( 
+							'object_id' => $post_id,
+						 	'term_taxonomy_id' => $vancouver
+						 	), 
+						array( 
+							'%d',
+							'%d' 
+							) 
+						);
+					
+					endif;	
+
+
+					if ($city_value == 'kelowna') :
+						$term_taxonomy_id = 3113;
+					elseif ($city_value == 'vancouver') :
+						$term_taxonomy_id = 3114;
+					endif;
+
+
+					$wpdb->insert( 
+						"$wpdb->term_relationships", 
+						array( 
+							'object_id' => $post_id, 
+							'term_taxonomy_id' => $term_taxonomy_id
+						), 
+						array( 
+							'%d', 
+							'%d'
+						) 
+					);
 
     	?>
-    		<li><?php echo $post_id; ?> <a href="<?php echo $post->guid; ?>"><?php echo $post->post_title; ?></a></li>
+    		<div style="border-bottom: 1px dashed grey; margin: 10px;"><a target="_blank" href="<?php echo $post->guid; ?>"><?php echo $post->post_title; ?></a></div>
 
     	<?php
 
 		endforeach;
 
-		echo '<h2>Task done!</h2>';
+		echo '<h2>Car location updated!</h2>';
 
     } 
 } 
